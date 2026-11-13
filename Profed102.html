@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Structures & ProfEd Quiz</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #111111;
+            --muted: #888888;
+            --border: #eaeaea;
+            --border-hover: #cccccc;
+            --active-bg: #fafafa;
+            --correct-bg: #f0fdf4;
+            --correct-border: #22c55e;
+            --correct-fg: #15803d;
+            --wrong-bg: #fef2f2;
+            --wrong-border: #ef4444;
+            --wrong-fg: #b91c1c;
+            --radius: 8px;
+        }
+
+        body.dark-mode {
+            --bg: #0a0a0a;
+            --fg: #ededed;
+            --muted: #a1a1aa;
+            --border: #27272a;
+            --border-hover: #3f3f46;
+            --active-bg: #18181b;
+            --correct-bg: #064e3b;
+            --correct-border: #059669;
+            --correct-fg: #34d399;
+            --wrong-bg: #450a0a;
+            --wrong-border: #ef4444;
+            --wrong-fg: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            background: color-mix(in srgb, var(--bg) 80%, transparent);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .nav h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--fg);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--active-bg);
+        }
+        
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .content {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 48px 24px 96px;
+        }
+
+        .question-block {
+            margin-bottom: 48px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: transparent;
+        }
+
+        .option:hover {
+            border-color: var(--border-hover);
+            background: var(--active-bg);
+        }
+
+        .option:has(input:checked) {
+            border-color: var(--fg);
+            border-width: 2px;
+            padding: 15px;
+            background: var(--active-bg);
+        }
+
+        .option input {
+            display: none;
+        }
+
+        .option-letter {
+            color: var(--muted);
+            font-weight: 500;
+            width: 32px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .option:has(input:checked) .option-letter {
+            color: var(--fg);
+        }
+
+        .option-text {
+            font-size: 15px;
+        }
+
+        .option-icon {
+            margin-left: auto;
+            font-size: 16px;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* Post-submission & reveal states */
+        .submitted .option {
+            pointer-events: none;
+        }
+
+        .option.correct {
+            border-color: var(--correct-border) !important;
+            background: var(--correct-bg) !important;
+            border-width: 2px;
+            padding: 15px;
+        }
+        
+        .option.correct .option-text, .option.correct .option-letter {
+            color: var(--correct-fg) !important;
+        }
+
+        .option.correct .option-icon {
+            display: block;
+            color: var(--correct-fg);
+        }
+
+        .option.wrong {
+            border-color: var(--wrong-border) !important;
+            background: var(--wrong-bg) !important;
+            border-width: 2px;
+            padding: 15px;
+        }
+        
+        .option.wrong .option-text, .option.wrong .option-letter {
+            color: var(--wrong-fg) !important;
+        }
+
+        .option.wrong .option-icon {
+            display: block;
+            color: var(--wrong-fg);
+        }
+
+        .option.revealed-correct {
+            border-color: #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.1) !important;
+            border-width: 2px;
+            padding: 15px;
+        }
+
+        .footer {
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 0 20px;
+            height: 40px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            height: 32px;
+            padding: 0 12px;
+            font-size: 13px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--fg);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--active-bg);
+            border-color: var(--border-hover);
+        }
+
+        .score-display {
+            font-size: 16px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* --- Console UI --- */
+        #console-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 350px;
+            height: 100vh;
+            background-color: #0c0c0c;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.5);
+            border-left: 1px solid #333;
+        }
+        
+        #console-panel.open {
+            transform: translateX(0);
+        }
+
+        #console-toggle {
+            position: absolute;
+            top: 50%;
+            left: -40px;
+            width: 40px;
+            height: 60px;
+            background-color: #0c0c0c;
+            color: #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px 0 0 8px;
+            font-weight: bold;
+            font-size: 20px;
+            transform: translateY(-50%);
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+            user-select: none;
+            border: 1px solid #333;
+            border-right: none;
+        }
+
+        #console-header {
+            padding: 12px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #console-output {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        #console-input-container {
+            padding: 12px;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+            background: #000000;
+        }
+
+        #console-input-container span {
+            margin-right: 8px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        #console-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .log-entry { word-break: break-word; line-height: 1.4; }
+        .log-command { color: #aaaaaa; }
+        .log-error { color: #ff5555; }
+        .log-success { color: #55ff55; }
+        .log-system { color: #facc15; }
+
+        /* Timer UI */
+        #timer-display {
+            font-weight: 700;
+            color: var(--wrong-border);
+            font-variant-numeric: tabular-nums;
+            font-size: 16px;
+            background: var(--wrong-bg);
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: none;
+            border: 1px solid var(--wrong-border);
+        }
+        #timer-display.active {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* --- Results Screen Animation --- */
+        #results-screen {
+            position: fixed;
+            inset: 0;
+            background: color-mix(in srgb, var(--bg) 95%, transparent);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        #results-screen.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #results-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.85) translateY(20px);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+        }
+
+        #results-screen.show #results-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            width: 250px;
+            height: 250px;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 2;
+        }
+
+        .circle {
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            transition: stroke-dasharray 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .circle.pass { stroke: var(--correct-border); }
+        .circle.fail { stroke: var(--wrong-border); }
+
+        .percentage {
+            fill: var(--fg);
+            font-family: inherit;
+            font-size: 6px;
+            text-anchor: middle;
+            font-weight: 600;
+        }
+
+        #score-message {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 24px 0 32px;
+            color: var(--fg);
+            text-align: center;
+        }
+        
+        @media (max-width: 650px) {
+            .nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .nav-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .footer { flex-direction: column; align-items: stretch; }
+            .score-display { margin-left: 0; text-align: center; margin-top: 8px; }
+            #console-panel { width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav">
+        <h1>Structures of English & ProfEd Quiz</h1>
+        <div class="nav-actions">
+            <span id="timer-display"></span>
+            <button class="btn btn-secondary nav-btn" onclick="reshuffleQuiz()">Reshuffle</button>
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleDarkMode()">Toggle Dark Mode 🌙</button>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div id="quiz-container"></div>
+        
+        <div class="footer">
+            <button id="submit-btn" class="btn btn-primary" onclick="submitQuiz()">Submit Answers</button>
+            <div id="score-display" class="score-display"></div>
+        </div>
+    </div>
+
+    <!-- Console Panel -->
+    <div id="console-panel">
+        <div id="console-toggle" onclick="toggleConsole()">⟨</div>
+        <div id="console-header">
+            <span>Terminal</span>
+            <span style="cursor:pointer" onclick="toggleConsole()">✕</span>
+        </div>
+        <div id="console-output"></div>
+        <div id="console-input-container">
+            <span>></span>
+            <input type="text" id="console-input" placeholder="Type command..." autocomplete="off">
+        </div>
+    </div>
+
+    <!-- Animated Results Overlay -->
+    <div id="results-screen">
+        <div id="results-content">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle"
+                    stroke-dasharray="0, 100"
+                    id="score-path"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <text x="18" y="20.35" class="percentage" id="score-text">0 / 0</text>
+            </svg>
+            <h2 id="score-message">Message</h2>
+            <button class="btn btn-secondary" onclick="reviewAnswers()">Review Answers</button>
+        </div>
+    </div>
+
+<script>
+    const quizData = [
+        // PROFED 102 (29 Questions)
+        { q: "According to the lesson on PROFED102, what does BPT stand for?[cite: 117]", options: ["Board for Professional Teachers", "Bureau of Public Teachers", "Board of Private Teachers", "Bureau of Professional Teaching"], a: 0 },
+        { q: "Which resolution is known as the Code of Ethics for Professional Teachers?[cite: 117]", options: ["Resolution No. 435, Series of 1997", "Presidential Decree No. 1006", "Republic Act No. 7836", "Memorandum Circular No. 1032"], a: 0 },
+        { q: "How many articles are there in the Code of Ethics for Professional Teachers?[cite: 117, 118]", options: ["10 Articles", "12 Articles", "13 Articles", "15 Articles"], a: 2 },
+        { q: "In the Code of Ethics for Teachers, what is Article I?[cite: 118]", options: ["The Teacher and the State", "Scope and Limitations", "A Teacher and the Profession", "The Teacher and the Community"], a: 1 },
+        { q: "In the Code of Ethics for Teachers, Article II pertains to the Teacher and the:[cite: 118]", options: ["Community", "State", "Profession", "Learners"], a: 1 },
+        { q: "According to the Code of Ethics, which article discusses The Teacher and the Community?[cite: 118]", options: ["Article I", "Article II", "Article III", "Article IV"], a: 2 },
+        { q: "Article IV of the Code of Ethics for Teachers focuses on a Teacher and the:[cite: 118]", options: ["Learners", "Parents", "Higher Authorities in the Profession", "Profession"], a: 3 },
+        { q: "Which article in the Code of Ethics refers to The Teacher and the Teaching Community?[cite: 118]", options: ["Article IV", "Article V", "Article VI", "Article VII"], a: 1 },
+        { q: "According to the Code of Ethics, Article VI covers the Teacher and:[cite: 118]", options: ["Higher Authorities in the Profession", "School Officials, Teachers and Other Personnel", "Business", "The State"], a: 0 },
+        { q: "Article VII of the Code of Ethics involves School Officials, Teachers and:[cite: 118]", options: ["Parents", "Higher Authorities", "Other Personnel", "The State"], a: 2 },
+        { q: "Which article in the Code of Ethics discusses The Teachers and Learners?[cite: 118]", options: ["Article VI", "Article VII", "Article VIII", "Article IX"], a: 2 },
+        { q: "Article IX of the Code of Ethics covers The Teachers and:[cite: 118]", options: ["Business", "Parents", "Learners", "The Community"], a: 1 },
+        { q: "In the Code of Ethics, which article is about The Teacher and Business?[cite: 118]", options: ["Article VIII", "Article IX", "Article X", "Article XI"], a: 2 },
+        { q: "Article XI of the Code of Ethics views the Teacher as a:[cite: 118]", options: ["Professional", "Leader", "Person", "Role Model"], a: 2 },
+        { q: "Which article in the Code of Ethics outlines Disciplinary Actions?[cite: 118]", options: ["Article XI", "Article XII", "Article XIII", "Article X"], a: 1 },
+        { q: "Republic Act No. 7836 is also known as the:[cite: 119]", options: ["Philippine Teachers Professionalization Act of 1994", "Code of Ethics for Professional Teachers", "Presidential Decree No. 1006", "Licensure Examination for Teachers Act"], a: 0 },
+        { q: "When was RA 7836 enacted?[cite: 119, 122]", options: ["September 22, 1976", "April 23, 1978", "December 16, 1994", "August 24, 1996"], a: 2 },
+        { q: "In RA 7836, what is the main focus of Article II?[cite: 120]", options: ["General provisions and objectives", "Board for Professional Teachers / Regulatory authority", "Examination and Registration", "Practice of the Teaching Profession"], a: 1 },
+        { q: "According to RA 7836, Article III covers:[cite: 120]", options: ["Examination and Registration / LET and teacher licensure", "Practice of the Teaching Profession", "Miscellaneous Provisions", "Board for Professional Teachers"], a: 0 },
+        { q: "In RA 7836, Article IV discusses the legal requirements and penalties for the:[cite: 120]", options: ["Board for Professional Teachers", "Examination and Registration", "Practice of the Teaching Profession", "Final Provisions"], a: 2 },
+        { q: "Presidential Decree No. 1006, promulgated on September 22, 1976, established the:[cite: 121]", options: ["Board for Professional Teachers (BPT)", "National Board for Teachers (NBT)", "Professional Regulation Commission (PRC)", "Civil Service Commission (CSC)"], a: 1 },
+        { q: "When was the first administration of the PBET under Memorandum Circular No. 1032?[cite: 121]", options: ["September 22, 1976", "April 23, 1978", "December 16, 1994", "August 24-25, 1996"], a: 1 },
+        { q: "When was the last administration of the PBET?[cite: 121]", options: ["December 1994", "November 1995", "August 1996", "September 1976"], a: 1 },
+        { q: "When was the first administration of the Licensure Examination for Teachers (LET) under the PRC?[cite: 122]", options: ["April 23, 1978", "December 16, 1994", "November 1995", "August 24-25, 1996"], a: 3 },
+        { q: "The PBET was previously administered by the Civil Service Commission (CSC) and the:[cite: 123]", options: ["Professional Regulation Commission (PRC)", "National Board for Teachers (NBT)", "Department of Education, Culture and Sports (DECS)", "Board for Professional Teachers (BPT)"], a: 2 },
+        { q: "The administration of the LET became the responsibility of which government body?[cite: 123]", options: ["Department of Education, Culture and Sports (DECS)", "Civil Service Commission (CSC)", "Professional Regulation Commission (PRC)", "National Board for Teachers (NBT)"], a: 2 },
+        { q: "According to the grading rubric for the class activity, how many points are allocated for 'Written Analysis'?[cite: 125]", options: ["10 Points", "25 Points", "35 Points", "50 Points"], a: 2 },
+        { q: "Under the Written Analysis rubric, how many points are allocated for Critical Analysis?[cite: 125]", options: ["5 points", "10 points", "15 points", "20 points"], a: 1 },
+        { q: "In the Presentation rubric, how many points are designated for Content Mastery?[cite: 125]", options: ["5 points", "10 points", "15 points", "25 points"], a: 0 },
+
+        // Prepositions of Place & Time (32 Questions)
+        { q: "According to the material, which preposition is used to show that something is located within the boundaries or confines of a specific place?[cite: 65]", options: ["in", "on", "under", "over"], a: 0 },
+        { q: "Which preposition indicates that something is in a position directly above a surface or touching it?[cite: 67]", options: ["over", "in", "on", "beside"], a: 2 },
+        { q: "The preposition 'over' is used to indicate:[cite: 71]", options: ["A lower position beneath an object", "A higher position, movement across or above something, or a duration of time exceeding a limit", "Something located next to something else", "A position in the middle of two objects"], a: 1 },
+        { q: "What is the opposite of the preposition 'behind', implying a direction or orientation from back to front?[cite: 79]", options: ["beside", "between", "in front of", "over"], a: 2 },
+        { q: "Which preposition means 'near,' 'next to,' or 'beside' when referring to location?[cite: 81]", options: ["in", "on", "by", "under"], a: 2 },
+        { q: "When an object is in the middle of two or more objects, places, or people, which preposition is used?[cite: 75]", options: ["over", "behind", "between", "beside"], a: 2 },
+        { q: "Which preposition indicates that something is at the back or rear of another object or person?[cite: 77]", options: ["in front of", "between", "behind", "over"], a: 2 },
+        { q: "In the 'Show and Tell' section, if a dog is beneath the table, which preposition is used?[cite: 55]", options: ["on", "in", "under", "over"], a: 2 },
+        { q: "In the memory quiz game, where was the rabbit located?[cite: 89]", options: ["Next to the dog", "Behind the cat", "On the sofa", "Under the tree"], a: 3 },
+        { q: "In the memory quiz game, where was the rat located?[cite: 95]", options: ["On the fridge", "Between the cheese and the cake", "Behind the cheese", "Under the table"], a: 1 },
+        { q: "In the memory quiz game, where is the crumpled can located?[cite: 98]", options: ["On the wall", "Under the chair", "Next to the bin", "In the bin"], a: 2 },
+        { q: "In the memory quiz game, where is the crab located?[cite: 101]", options: ["On the umbrella", "In the water", "By the sandcastle", "Under the tree"], a: 2 },
+        { q: "Which preposition denotes that something is beneath or below another object or surface?[cite: 69]", options: ["in", "over", "under", "by"], a: 2 },
+        { q: "Which preposition is used to show something is located next to something else?[cite: 73]", options: ["beside", "between", "behind", "in front of"], a: 0 },
+        { q: "If the owl is facing you with a box directly at its back, the owl is:[cite: 4, 80]", options: ["in the box", "behind the box", "in front of the box", "over the box"], a: 2 },
+        { q: "If the owl is seen popping out from the center of a box, the owl is:[cite: 6, 66]", options: ["on the box", "inside the box", "under the box", "beside the box"], a: 1 },
+        { q: "If only the owl's head is visible peeking from the rear of the box, the owl is:[cite: 8, 78]", options: ["in front of the box", "between the boxes", "behind the box", "by the box"], a: 2 },
+        { q: "If the owl is standing directly atop the closed box, the owl is:[cite: 12, 68]", options: ["on the box", "under the box", "in the box", "behind the box"], a: 0 },
+        { q: "If the owl is positioned with one box to its left and another to its right, the owl is:[cite: 14, 76]", options: ["in the boxes", "over the boxes", "between the boxes", "by the boxes"], a: 2 },
+        { q: "If the owl is flying in the air higher than the box, the owl is:[cite: 16, 72]", options: ["in the box", "above the box", "under the box", "behind the box"], a: 1 },
+        { q: "If the dog is standing on the floor directly next to the table, it is:[cite: 57, 74]", options: ["on the table", "in the table", "under the table", "beside the table"], a: 3 },
+        { q: "If the dog is situated in the space separating a box and a table, it is:[cite: 61, 76]", options: ["beside the table", "behind the box", "between the box and the table", "under the table"], a: 2 },
+        { q: "Which preposition of time is used with specific times and holiday periods (e.g., 7 o'clock, Thanksgiving)?[cite: 32]", options: ["in", "on", "at", "by"], a: 2 },
+        { q: "Which preposition of time is used with days and dates (e.g., Wednesday, March 27th)?[cite: 33]", options: ["in", "on", "at", "by"], a: 1 },
+        { q: "Which preposition of time is used with months, years, decades, and centuries?[cite: 34, 35]", options: ["at", "on", "in", "over"], a: 2 },
+        { q: "Based on the rules, what is the correct preposition for the sentence: 'My birthday is ___ January.'?[cite: 34]", options: ["at", "on", "in", "by"], a: 2 },
+        { q: "Based on the rules, what is the correct preposition for the sentence: 'She will arrive ___ 8:00AM.'?[cite: 32]", options: ["in", "on", "at", "over"], a: 2 },
+        { q: "According to the 'What's Wrong?' slides, what is the correct correction for the sentence 'John's class starts at June.'?[cite: 49]", options: ["at to in", "at to on", "at to by", "The sentence is correct"], a: 0 },
+        { q: "'We go to the beach ___ summer.' Which preposition correctly fills the blank?[cite: 36]", options: ["at", "on", "in", "by"], a: 2 },
+        { q: "'The exam is ___ the 16th.' Which preposition correctly fills the blank?[cite: 33]", options: ["at", "on", "in", "over"], a: 1 },
+        { q: "'Shakespeare was born ___ 1564.' Which preposition correctly fills the blank?[cite: 34]", options: ["at", "on", "in", "by"], a: 2 },
+        { q: "According to the 'What's Wrong?' slides, what is the correct correction for 'Mother's meeting is on evening.'?[cite: 47]", options: ["on to in", "on to at", "on to by", "The sentence is correct"], a: 1 },
+
+        // Adverbs (11 Questions)
+        { q: "According to the material, most adverbs tell you how, where, or when something is done. They describe the manner, place, or time of an action.[cite: 107]", options: ["True", "False", "Only manner", "Only time"], a: 0 },
+        { q: "Many adverbs end with '-ly', which are made by adding '-ly' to:[cite: 107]", options: ["Nouns", "Verbs", "Adjectives", "Pronouns"], a: 2 },
+        { q: "Which of the following words ends in '-ly' but is an adjective, NOT an adverb, according to the examples provided?[cite: 107]", options: ["Correctly", "Carelessly", "Safely", "Lonely"], a: 3 },
+        { q: "An adverb of manner describes:[cite: 109]", options: ["Where an action is done", "In which manner an action is done", "When an action is done", "How many times an action is done"], a: 1 },
+        { q: "In the sentence 'The plane landed safely,' what kind of adverb is 'safely'?[cite: 109]", options: ["Adverb of Time", "Adverb of Place", "Adverb of Manner", "Adverb of Frequency"], a: 2 },
+        { q: "Which kind of adverb shows how many times an action is done?[cite: 110]", options: ["Adverb of Degree", "Adverb of Frequency", "Adverb of Purpose/Reason", "Adverb of Time"], a: 1 },
+        { q: "In the sentence 'He is hence unable to refute the charge,' the word 'hence' is an adverb of:[cite: 111]", options: ["Manner", "Frequency", "Degree", "Purpose/Reason"], a: 3 },
+        { q: "'The sea is very stormy.' What kind of adverb is 'very'?[cite: 111]", options: ["Degree", "Affirmation/Negation", "Place", "Time"], a: 0 },
+        { q: "Which kind of adverb describes where an action is done?[cite: 109]", options: ["Manner", "Place", "Time", "Degree"], a: 1 },
+        { q: "'I've lived here for about two years.' The word 'here' is an example of an adverb of:[cite: 109]", options: ["Manner", "Time", "Place", "Frequency"], a: 2 },
+        { q: "In the sentence 'The tortoise walks slowly.' What kind of adverb is 'slowly'?[cite: 113]", options: ["Adverb of Time", "Adverb of Place", "Adverb of Manner", "Adverb of Degree"], a: 2 },
+
+        // Tenses (8 Questions)
+        { q: "According to the English Tenses Chart, what is the structure for the Present Continuous tense?[cite: 115]", options: ["subject + base verb", "subject + be (present) + present participle", "subject + have/has + past participle", "subject + will + be + present participle"], a: 1 },
+        { q: "'I had walked' is an example of which tense?[cite: 115]", options: ["Present Perfect", "Past Perfect", "Future Perfect", "Past Simple"], a: 1 },
+        { q: "What is the structure for the Future Perfect Continuous tense?[cite: 115]", options: ["subject + will + have + been + present participle", "subject + had + been + present participle", "subject + have/has + been + present participle", "subject + will + have + past participle"], a: 0 },
+        { q: "Which sentence is an example of the Present Perfect Continuous tense?[cite: 115]", options: ["I was walking.", "I have walked.", "I have been walking.", "I will be walking."], a: 2 },
+        { q: "How do you form a negative sentence in the Past Simple tense according to the chart?[cite: 115]", options: ["I haven't walked.", "I didn't walk.", "I wasn't walking.", "I won't walk."], a: 1 },
+        { q: "What is the question form for the Future Simple tense?[cite: 115]", options: ["Did you walk?", "Have you walked?", "Will you walk?", "Are you walking?"], a: 2 },
+        { q: "According to the English Tenses Chart, what is the formula for the Past Continuous tense?[cite: 115]", options: ["subject + be (past) + present participle", "subject + past tense verb", "subject + had + past participle", "subject + will + be + present participle"], a: 0 },
+        { q: "'You haven't walked. / He hasn't walked.' are negative examples of which tense?[cite: 115]", options: ["Present Simple", "Past Perfect", "Future Perfect", "Present Perfect"], a: 3 }
+    ];
+
+    let questionOrder = Array.from({length: quizData.length}, (_, i) => i + 1);
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function renderQuiz() {
+        let quizContainer = document.getElementById('quiz-container');
+        quizContainer.classList.remove('submitted');
+        
+        let allHTML = ''; 
+        
+        for (let i = 0; i < questionOrder.length; i++) {
+            let qNum = questionOrder[i];
+            let displayNum = i + 1;
+            let qData = quizData[qNum - 1]; 
+            
+            if (qData) {
+                let qHTML = `<div class="question-block" id="qb-${qNum}">`;
+                qHTML += `<div class="question-text">${displayNum}. ${qData.q}</div>`;
+                
+                let optionsHTML = `<div class="options">`;
+                const labels = ["A", "B", "C", "D"];
+                for(let j = 0; j < qData.options.length; j++) {
+                    optionsHTML += `
+                        <label class="option" id="label-q${qNum}-opt${j}">
+                            <input type="radio" name="q${qNum}" value="${j}">
+                            <span class="option-letter">${labels[j]}</span>
+                            <span class="option-text">${qData.options[j]}</span>
+                            <span class="option-icon" id="icon-q${qNum}-opt${j}"></span>
+                        </label>
+                    `;
+                }
+                optionsHTML += `</div>`;
+                qHTML += optionsHTML;
+                qHTML += `<input type="hidden" id="a${qNum}" value="${qData.a}">`;
+                qHTML += `</div>`;
+                
+                allHTML += qHTML;
+            }
+        }
+        
+        quizContainer.innerHTML = allHTML;
+        document.getElementById('score-display').innerText = '';
+        document.getElementById('submit-btn').style.display = 'inline-flex';
+    }
+
+    function reshuffleQuiz() {
+        shuffleArray(questionOrder);
+        renderQuiz();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    let finalScore = 0;
+
+    function submitQuiz() {
+        const container = document.getElementById('quiz-container');
+        if (container.classList.contains('submitted')) return;
+        
+        container.classList.add('submitted');
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('timer-display').classList.remove('active');
+        }
+
+        finalScore = 0;
+        const totalQuestions = quizData.length;
+
+        for (let i = 0; i < questionOrder.length; i++) {
+            let qNum = questionOrder[i];
+            let correctAnswerIndex = document.getElementById('a' + qNum).value;
+            let selectedOption = document.querySelector(`input[name="q${qNum}"]:checked`);
+            
+            let correctLabel = document.getElementById(`label-q${qNum}-opt${correctAnswerIndex}`);
+            let correctIcon = document.getElementById(`icon-q${qNum}-opt${correctAnswerIndex}`);
+            
+            if (selectedOption) {
+                let selectedIndex = selectedOption.value;
+                let selectedLabel = document.getElementById(`label-q${qNum}-opt${selectedIndex}`);
+                let selectedIcon = document.getElementById(`icon-q${qNum}-opt${selectedIndex}`);
+                
+                if (selectedIndex === correctAnswerIndex) {
+                    finalScore++;
+                    selectedLabel.classList.add('correct');
+                    selectedIcon.innerText = '✓';
+                } else {
+                    selectedLabel.classList.add('wrong');
+                    selectedIcon.innerText = '✕';
+                    correctLabel.classList.add('correct');
+                    correctIcon.innerText = '✓';
+                }
+            } else {
+                correctLabel.classList.add('correct');
+                correctIcon.innerText = '✓';
+            }
+        }
+        
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('score-display').innerText = `Final Score: ${finalScore} / ${totalQuestions}`;
+        logToConsole(`Quiz Submitted! Final Score: ${finalScore}/${totalQuestions}`, 'log-system');
+
+        const percentage = (finalScore / totalQuestions) * 100;
+        const resultsScreen = document.getElementById('results-screen');
+        const scorePath = document.getElementById('score-path');
+        const scoreText = document.getElementById('score-text');
+        const scoreMessage = document.getElementById('score-message');
+        
+        scorePath.setAttribute('stroke-dasharray', `0, 100`);
+        scoreText.textContent = `0 / ${totalQuestions}`;
+        resultsScreen.classList.add('show');
+        
+        if (finalScore >= (totalQuestions / 2)) {
+            scoreMessage.innerText = "Di kana tres!";
+            scorePath.classList.add('pass');
+            scorePath.classList.remove('fail');
+        } else {
+            scoreMessage.innerText = "Really bro?";
+            scorePath.classList.add('fail');
+            scorePath.classList.remove('pass');
+        }
+
+        setTimeout(() => {
+            scorePath.setAttribute('stroke-dasharray', `${percentage}, 100`);
+            const duration = 1500;
+            const startTimestamp = performance.now();
+            
+            const animateNumber = (timestamp) => {
+                const elapsed = timestamp - startTimestamp;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+                const currentScore = Math.floor(easeOut(progress) * finalScore);
+                
+                scoreText.textContent = `${currentScore} / ${totalQuestions}`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateNumber);
+                } else {
+                    scoreText.textContent = `${finalScore} / ${totalQuestions}`;
+                }
+            };
+            
+            if (finalScore > 0) requestAnimationFrame(animateNumber);
+        }, 300);
+    }
+
+    function reviewAnswers() {
+        document.getElementById('results-screen').classList.remove('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            themeToggle.innerHTML = 'Toggle Light Mode ☀️';
+            themeToggle.setAttribute('title', 'Toggle Light Mode');
+        } else {
+            themeToggle.innerHTML = 'Toggle Dark Mode 🌙';
+            themeToggle.setAttribute('title', 'Toggle Dark Mode');
+        }
+    }
+
+    // --- Console UI & Logic ---
+    function toggleConsole() {
+        const panel = document.getElementById('console-panel');
+        const toggleBtn = document.getElementById('console-toggle');
+        panel.classList.toggle('open');
+        toggleBtn.innerText = panel.classList.contains('open') ? '⟩' : '⟨';
+    }
+
+    function logToConsole(message, typeClass = '') {
+        const output = document.getElementById('console-output');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${typeClass}`;
+        entry.innerText = message;
+        output.appendChild(entry);
+        output.scrollTop = output.scrollHeight;
+    }
+
+    // Listen for option selections via Event Delegation
+    document.getElementById('quiz-container').addEventListener('change', function(e) {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'radio') {
+            let qNum = e.target.name.substring(1);
+            let selectedVal = e.target.value;
+            let correctVal = document.getElementById('a' + qNum).value;
+            let labels = ["A", "B", "C", "D"];
+            let isCorrect = (String(selectedVal) === String(correctVal));
+            
+            // Find visual question number based on DOM position
+            let questionBlock = document.getElementById('qb-' + qNum);
+            let visualNum = Array.from(document.querySelectorAll('.question-block')).indexOf(questionBlock) + 1;
+            
+            logToConsole(`[Click] Q${visualNum}: Selected Option ${labels[selectedVal]} -> ${isCorrect ? 'Correct ✅' : 'Wrong ❌'}`, isCorrect ? 'log-success' : 'log-error');
+        }
+    });
+
+    // Command Processor
+    document.getElementById('console-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const cmd = this.value.trim();
+            if (!cmd) return;
+            
+            this.value = '';
+            logToConsole(`> ${cmd}`, 'log-command');
+            
+            const commandStr = cmd.toLowerCase();
+            const isSubmitted = document.getElementById('quiz-container').classList.contains('submitted');
+            
+            if (isSubmitted && commandStr !== '// reshuffle') {
+                logToConsole('Quiz already submitted. Reshuffle to use commands.', 'log-error');
+                return;
+            }
+
+            if (commandStr === '// reveal') {
+                document.querySelectorAll('.option').forEach(opt => opt.classList.remove('revealed-correct'));
+                for (let i = 0; i < questionOrder.length; i++) {
+                    let qNum = questionOrder[i];
+                    let correctIndex = document.getElementById('a' + qNum).value;
+                    let correctLabel = document.getElementById(`label-q${qNum}-opt${correctIndex}`);
+                    if(correctLabel) correctLabel.classList.add('revealed-correct');
+                }
+                logToConsole('Revealed all correct answers.', 'log-system');
+            } 
+            else if (commandStr === '// correct all') {
+                for (let i = 0; i < questionOrder.length; i++) {
+                    let qNum = questionOrder[i];
+                    let correctIndex = document.getElementById('a' + qNum).value;
+                    let radio = document.querySelector(`input[name="q${qNum}"][value="${correctIndex}"]`);
+                    if(radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change', {bubbles: true})); // trigger visual update & log
+                    }
+                }
+                logToConsole('All correct answers automatically selected.', 'log-system');
+            }
+            else if (commandStr === '// wrong all') {
+                for (let i = 0; i < questionOrder.length; i++) {
+                    let qNum = questionOrder[i];
+                    let correctIndex = parseInt(document.getElementById('a' + qNum).value);
+                    let wrongIndex = (correctIndex + 1) % 4; // Safely shift to a wrong option
+                    let radio = document.querySelector(`input[name="q${qNum}"][value="${wrongIndex}"]`);
+                    if(!radio) radio = document.querySelector(`input[name="q${qNum}"][value="0"]`);
+                    if(radio && radio.value == correctIndex) radio = document.querySelector(`input[name="q${qNum}"][value="1"]`);
+                    if(radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change', {bubbles: true}));
+                    }
+                }
+                logToConsole('All wrong answers automatically selected.', 'log-system');
+            }
+            else if (commandStr === '// reshuffle') {
+                logToConsole('Reshuffling quiz...', 'log-system');
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('timer-display').classList.remove('active');
+                }
+                reshuffleQuiz();
+                logToConsole('Quiz reshuffled successfully.', 'log-system');
+            }
+            else if (commandStr.startsWith('// set timer')) {
+                const match = commandStr.match(/^\/\/\s*set\s*timer\s*\(?\s*(\d+)\s*\)?$/i);
+                if (match && match[1]) {
+                    let secs = parseInt(match[1]);
+                    if (secs >= 1 && secs <= 1200) {
+                        startTimer(secs);
+                        logToConsole(`Timer set and started for ${secs} seconds.`, 'log-system');
+                    } else {
+                        logToConsole('Timer limit must be between 1 and 1200 seconds.', 'log-error');
+                    }
+                } else {
+                    logToConsole('Invalid timer format. Example: // set timer (60)', 'log-error');
+                }
+            } 
+            else {
+                logToConsole('Unknown command. Available: // reveal, // correct all, // wrong all, // reshuffle, // set timer (sec)', 'log-error');
+            }
+        }
+    });
+
+    // --- Timer Logic ---
+    let timerInterval = null;
+    let timerSeconds = 0;
+    
+    function startTimer(seconds) {
+        const timerUI = document.getElementById('timer-display');
+        if (timerInterval) clearInterval(timerInterval);
+        timerSeconds = seconds;
+        updateTimerUI();
+        timerUI.classList.add('active');
+        
+        timerInterval = setInterval(() => {
+            timerSeconds--;
+            updateTimerUI();
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerUI.classList.remove('active');
+                logToConsole('Time is up! Auto-submitting quiz...', 'log-system');
+                submitQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        const timerUI = document.getElementById('timer-display');
+        if (timerSeconds < 0) return;
+        let m = Math.floor(timerSeconds / 60);
+        let s = timerSeconds % 60;
+        timerUI.innerText = `⏱ ${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // Init System Message
+    logToConsole('System Initialized. Awaiting commands...', 'log-system');
+    logToConsole('Available commands: \n- // reveal\n- // correct all\n- // wrong all\n- // reshuffle\n- // set timer (60)', 'log-command');
+
+    // Init Quiz
+    renderQuiz();
+</script>
+
+</body>
+</html>
